@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($user && password_verify($password, $user["password_hash"])) {
         $_SESSION["user_id"] = $user["id"];
         $_SESSION["username"] = $username;
-        header("Location: ../index.php");
+        header("Location: ../main.php");
         exit;
     } else {
         $error = "Invalid login credentials.";

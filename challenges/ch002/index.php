@@ -6,11 +6,14 @@ require_once "../../includes/config.php"; // Database connection
  *    OWASP Hackademic Challenges Project
  *    ----------------------------------------------------------------
  *    Copyright (C) 2010-2011
- *   	  Andreas Venieris [venieris@owasp.gr]
- *   	  Anastasios Stasinopoulos [anast@owasp.gr]
+ *        Andreas Venieris [venieris@owasp.gr]
+ *        Anastasios Stasinopoulos [anast@owasp.gr]
+ *    ----------------------------------------------------------------
+ *    PHP 8 Port & Maintenance (2025)
+ *        Petros Papagiannis [peterpapagiannis@yahoo.com]
+ *        Cyprus College, Limassol
  *    ----------------------------------------------------------------
  */
-
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

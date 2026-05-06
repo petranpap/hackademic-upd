@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="el" data-lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWASP Hackademic Challenges</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --green: #33ff33;
+            --green-dim: #1a8c1a;
+            --green-glow: rgba(51, 255, 51, 0.15);
+            --yellow: #ffcc00;
+            --red: #ff4444;
+            --bg: #000000;
+            --bg-card: #0a0a0a;
+            --bg-panel: #080808;
+            --border: #1a3d1a;
+            --border-bright: #33ff33;
+            --font: 'Share Tech Mono', 'Courier New', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--green);
+            font-family: var(--font);
+            font-size: 15px;
+            line-height: 1.7;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Scanline overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.08) 2px,
+                rgba(0, 0, 0, 0.08) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Subtle vignette */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        /* ─── NAVBAR ─── */
+        .navbar {
+            background: rgba(0,0,0,0.95);
+            border-bottom: 1px solid var(--border-bright);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            height: 64px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 0 20px rgba(51,255,51,0.1);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+
+        .navbar-brand img {
+            height: 38px;
+            filter: brightness(0) invert(1) sepia(1) hue-rotate(75deg) saturate(3);
+        }
+
+        .brand-text {
+            color: var(--green);
+            font-size: 1rem;
+            letter-spacing: 0.08em;
+        }
+
+        .brand-text span {
+            color: var(--yellow);
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Language toggle */
+        .lang-toggle {
+            display: flex;
+            border: 1px solid var(--border-bright);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-right: 12px;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--green-dim);
+            font-family: var(--font);
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            cursor: pointer;
+            letter-spacing: 0.08em;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: var(--green);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: 1px solid var(--green-dim);
+            color: var(--green);
+            font-family: var(--font);
+            font-size: 0.78rem;
+            padding: 6px 14px;
+            text-decoration: none;
+            border-radius: 3px;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--green);
+            color: #000;
+            border-color: var(--green);
+            box-shadow: 0 0 12px rgba(51,255,51,0.3);
+        }
+
+        .nav-btn.primary {
+            border-color: var(--yellow);
+            color: var(--yellow);
+        }
+
+        .nav-btn.primary:hover {
+            background: var(--yellow);
+            color: #000;
+            border-color: var(--yellow);
+            box-shadow: 0 0 12px rgba(255,204,0,0.3);
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            padding: 80px 40px 60px;
+            max-width: 960px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .hero-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.15em;
+            color: var(--green-dim);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-label::before {
+            content: '';
+            display: inline-block;
+            width: 24px;
+            height: 1px;
+            background: var(--green-dim);
+        }
+
+        .hero h1 {
+            font-size: clamp(1.6rem, 4vw, 2.6rem);
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+            margin-bottom: 12px;
+            color: var(--green);
+        }
+
+        .hero h1 .blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .hero-subtitle {
+            font-size: 0.88rem;
+            color: var(--green-dim);
+            letter-spacing: 0.05em;
+            margin-bottom: 40px;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--green);
+            color: #000;
+            font-family: var(--font);
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 12px 28px;
+            text-decoration: none;
+            border-radius: 3px;
+            letter-spacing: 0.08em;
+            transition: all 0.2s;
+            box-shadow: 0 0 20px rgba(51,255,51,0.25);
+        }
+
+        .hero-cta:hover {
+            background: #fff;
+            box-shadow: 0 0 30px rgba(51,255,51,0.5);
+            transform: translateY(-1px);
+        }
+
+        /* ─── TERMINAL BOX ─── */
+        .terminal-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-bright);
+            border-radius: 6px;
+            padding: 28px 32px;
+            margin-bottom: 32px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(51,255,51,0.06), inset 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        .terminal-box::before {
+            content: '● ● ●';
+            position: absolute;
+            top: 10px;
+            left: 16px;
+            font-size: 0.6rem;
+            letter-spacing: 4px;
+            color: var(--border-bright);
+            opacity: 0.5;
+        }
+
+        .terminal-box h2 {
+            font-size: 1rem;
+            color: var(--yellow);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            padding-top: 12px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .terminal-box p {
+            color: #b0d8b0;
+            font-size: 0.88rem;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .terminal-box p:last-child { margin-bottom: 0; }
+
+        .prompt {
+            color: var(--green-dim);
+            font-size: 0.82rem;
+        }
+
+        .prompt::before {
+            content: '> ';
+            color: var(--yellow);
+        }
+
+        /* ─── MAIN GRID ─── */
+        .main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 40px 80px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 680px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .hero, .main { padding-left: 20px; padding-right: 20px; }
+            .navbar { padding: 0 16px; }
+        }
+
+        /* ─── CHALLENGE CATEGORIES ─── */
+        .cat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 24px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .cat-box:hover {
+            border-color: var(--green-dim);
+            box-shadow: 0 0 20px rgba(51,255,51,0.08);
+        }
+
+        .cat-box h3 {
+            font-size: 0.82rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--yellow);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cat-box h3::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--yellow);
+            border-radius: 50%;
+        }
+
+        .cat-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .cat-list li {
+            background: rgba(51,255,51,0.05);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            color: var(--green-dim);
+            letter-spacing: 0.04em;
+        }
+
+        /* ─── TEAM SECTION ─── */
+        .team-section {
+            margin-bottom: 32px;
+        }
+
+        .section-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.15em;
+            color: var(--green-dim);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 680px) {
+            .team-grid { grid-template-columns: 1fr; }
+        }
+
+        .team-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 18px 20px;
+            transition: border-color 0.2s;
+        }
+
+        .team-card:hover { border-color: var(--green-dim); }
+
+        .team-card.highlight {
+            border-color: var(--green-dim);
+            background: rgba(51,255,51,0.03);
+        }
+
+        .team-card .org {
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--yellow);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .team-card .org img {
+            height: 20px;
+            filter: brightness(0) invert(1) sepia(1) hue-rotate(75deg) saturate(2);
+            opacity: 0.7;
+        }
+
+        .person {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+        }
+
+        .person:last-child { margin-bottom: 0; }
+
+        .person::before {
+            content: '→';
+            color: var(--green-dim);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .person .name { color: var(--green); }
+
+        .person .role {
+            color: var(--green-dim);
+            font-size: 0.75rem;
+            display: block;
+        }
+
+        .person a {
+            color: var(--green-dim);
+            text-decoration: none;
+            font-size: 0.75rem;
+        }
+
+        .person a:hover { color: var(--green); }
+
+        /* ─── STATUS BAR ─── */
+        .status-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.78rem;
+            color: var(--green-dim);
+            margin-bottom: 32px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--green);
+            border-radius: 50%;
+            flex-shrink: 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(51,255,51,0.4); }
+            50% { box-shadow: 0 0 0 5px rgba(51,255,51,0); }
+        }
+
+        .status-bar span { color: var(--green); }
+
+        /* ─── FOOTER ─── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 24px 40px;
+            max-width: 960px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.75rem;
+            color: var(--green-dim);
+        }
+
+        footer a {
+            color: var(--green-dim);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        footer a:hover { color: var(--green); }
+
+        footer img.gpl {
+            height: 22px;
+            opacity: 0.5;
+            filter: grayscale(1);
+            transition: opacity 0.2s;
+        }
+
+        footer img.gpl:hover { opacity: 0.8; }
+
+        /* ─── LANGUAGE CONTENT ─── */
+        [data-el], [data-en] { }
+
+        html[data-lang="el"] [data-en] { display: none; }
+        html[data-lang="en"] [data-el] { display: none; }
+
+        /* Reveal animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-d1 { transition-delay: 0.05s; }
+        .reveal-d2 { transition-delay: 0.12s; }
+        .reveal-d3 { transition-delay: 0.2s; }
+        .reveal-d4 { transition-delay: 0.28s; }
+
+        /* Typing cursor */
+        .typed::after {
+            content: '█';
+            animation: blink 1s step-end infinite;
+            color: var(--green);
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ─── -->
+<nav class="navbar">
+    <a class="navbar-brand" href="#">
+        <img src="https://owasp.org/assets/images/logo.png" alt="OWASP" onerror="this.style.display='none'">
+        <span class="brand-text">OWASP <span>Hackademic</span></span>
+    </a>
+    <div class="navbar-right">
+        <div class="lang-toggle">
+            <button class="lang-btn active" onclick="setLang('el')" id="btn-el">GR</button>
+            <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+        </div>
+        <a href="/main.php" class="nav-btn primary">
+            <span data-el>▶ Είσοδος</span>
+            <span data-en>▶ Login</span>
+        </a>
+    </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+    <p class="hero-label reveal visible">
+        <span data-el>OWASP Hackademic Challenges Project</span>
+        <span data-en>OWASP Hackademic Challenges Project</span>
+    </p>
+
+    <h1 class="reveal visible">
+        <span data-el>Καλωσορίστε στο<br>Hackademic<span class="blink">_</span></span>
+        <span data-en>Welcome to<br>Hackademic<span class="blink">_</span></span>
+    </h1>
+
+    <p class="hero-subtitle reveal visible">
+        <span data-el>// Μάθετε web security μέσα από πραγματικά σενάρια επίθεσης</span>
+        <span data-en>// Learn web security through real-world attack scenarios</span>
+    </p>
+
+    <a href="/main.php" class="hero-cta reveal visible">
+        <span data-el>Ξεκινήστε τις Προκλήσεις →</span>
+        <span data-en>Start the Challenges →</span>
+    </a>
+</section>
+
+<!-- ─── MAIN ─── -->
+<main class="main">
+
+    <!-- Status bar -->
+    <div class="status-bar reveal reveal-d1">
+        <div class="status-dot"></div>
+        <span data-el><span>Σύστημα Ενεργό</span> · Cyprus College · Λεμεσός, Κύπρος</span>
+        <span data-en><span>System Online</span> · Cyprus College · Limassol, Cyprus</span>
+    </div>
+
+    <!-- About terminal box -->
+    <div class="terminal-box reveal reveal-d2">
+        <h2 data-el>// Σχετικά με το Project</h2>
+        <h2 data-en>// About the Project</h2>
+
+        <p data-el>
+            Το OWASP Hackademic Challenges Project είναι ένα εργαλείο ανοικτού κώδικα που σας βοηθά να εξετάσετε
+            τις γνώσεις σας σχετικά με την ασφάλεια web εφαρμογών. Μπορείτε να το χρησιμοποιήσετε για να
+            «επιτεθείτε» σε εφαρμογές web μέσα από ένα ρεαλιστικό αλλά ταυτόχρονα ελεγχόμενο και ασφαλές
+            περιβάλλον.
+        </p>
+        <p data-en>
+            The OWASP Hackademic Challenges Project is an open source project that helps you test your knowledge
+            on web application security. You can use it to actually attack web applications in a realistic but
+            also controllable and safe environment.
+        </p>
+
+        <p data-el>
+            Στόχος του είναι η εξοικείωση των φοιτητών με τις τεχνικές, τα εργαλεία και τη μεθοδολογία που
+            χρησιμοποιούν κακόβουλοι hackers, προσφέροντας ένα ασφαλές εικονικό περιβάλλον στο οποίο μπορούν να
+            επιχειρήσουν ανάλογες επιθέσεις — και να ενσωματώσουν τα κατάλληλα αντίμετρα στις δικές τους
+            εφαρμογές.
+        </p>
+        <p data-en>
+            The goal is to familiarise students with the techniques, tools and methodology used by malicious
+            hackers — providing a safe virtual environment where they can attempt similar attacks and learn to
+            implement the appropriate defences in their own applications.
+        </p>
+
+        <p data-el>
+            Η παρούσα έκδοση έχει ενημερωθεί για PHP 8 και φιλοξενείται στο <strong style="color:var(--green)">Cyprus College</strong>, όπου χρησιμοποιείται στο μάθημα Ασφάλεια Δικτύων &amp; Εφαρμογών.
+        </p>
+        <p data-en>
+            This version has been updated for PHP 8 and is hosted at <strong style="color:var(--green)">Cyprus College</strong>, where it is used in the Network &amp; Application Security course.
+        </p>
+
+        <br>
+        <p class="prompt" data-el>Συνδεθείτε για να ξεκινήσετε.</p>
+        <p class="prompt" data-en>Login to get started.</p>
+    </div>
+
+    <!-- Challenge categories -->
+    <div class="section-label reveal reveal-d3">
+        <span data-el>Κατηγορίες Προκλήσεων</span>
+        <span data-en>Challenge Categories</span>
+    </div>
+
+    <div class="grid-2 reveal reveal-d3">
+        <div class="cat-box">
+            <h3 data-el>Web Επιθέσεις</h3>
+            <h3 data-en>Web Attacks</h3>
+            <ul class="cat-list">
+                <li>SQL Injection</li>
+                <li>XSS</li>
+                <li>CSRF</li>
+                <li>File Inclusion</li>
+                <li>Command Injection</li>
+                <li>Broken Auth</li>
+                <li>IDOR</li>
+                <li>Path Traversal</li>
+                <li>Open Redirect</li>
+                <li>XXE</li>
+                <li>SSRF</li>
+                <li>Clickjacking</li>
+            </ul>
+        </div>
+        <div class="cat-box">
+            <h3 data-el>Κρυπτογραφία</h3>
+            <h3 data-en>Cryptography</h3>
+            <ul class="cat-list">
+                <li>Caesar Cipher</li>
+                <li>Base64</li>
+                <li>MD5 / SHA</li>
+                <li>RSA Basics</li>
+                <li>Hash Cracking</li>
+                <li>Encoding</li>
+                <li>JWT Attacks</li>
+                <li>Padding Oracle</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Team -->
+    <div class="section-label reveal reveal-d4">
+        <span data-el>Ομάδα &amp; Αναγνώριση</span>
+        <span data-en>Team &amp; Credits</span>
+    </div>
+
+    <div class="team-grid reveal reveal-d4">
+        <!-- Original team -->
+        <div class="team-card">
+            <div class="org">
+                <span data-el>Πρωτότυπο — Πανεπιστήμιο Θεσσαλίας</span>
+                <span data-en>Original — University of Thessaly</span>
+            </div>
+            <div class="person">
+                <div>
+                    <span class="name">Andreas Venieris</span>
+                    <span class="role">
+                        <a href="mailto:venieris@owasp.gr">venieris@owasp.gr</a>
+                    </span>
+                    <span class="role" data-el>Κύριος Προγραμματιστής</span>
+                    <span class="role" data-en>Lead Developer</span>
+                </div>
+            </div>
+            <div class="person">
+                <div>
+                    <span class="name">Anastasios Stasinopoulos</span>
+                    <span class="role">
+                        <a href="mailto:anast@owasp.gr">anast@owasp.gr</a>
+                    </span>
+                    <span class="role" data-el>Προγραμματιστής</span>
+                    <span class="role" data-en>Developer</span>
+                </div>
+            </div>
+            <div class="person">
+                <div>
+                    <span class="name">Δρ. Βασίλης Βλάχος</span>
+                    <span class="role" data-el>Ακαδημαϊκός Επόπτης</span>
+                    <span class="role" data-en>Academic Supervisor</span>
+                </div>
+            </div>
+            <div class="person">
+                <div>
+                    <span class="name">Δρ. Αλέξανδρος Παπανικολάου</span>
+                    <span class="role" data-el>Επιστημονικός Συνεργάτης</span>
+                    <span class="role" data-en>Scientific Collaborator</span>
+                </div>
+            </div>
+            <div class="person">
+                <div>
+                    <span class="name">Δρ. Κωνσταντίνος Παπαπαναγιώτου</span>
+                    <span class="role" data-el>Λέκτορας</span>
+                    <span class="role" data-en>Lecturer</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cyprus College team -->
+        <div class="team-card highlight">
+            <div class="org">
+                <span data-el>PHP 8 Port — Cyprus College, Λεμεσός</span>
+                <span data-en>PHP 8 Port — Cyprus College, Limassol</span>
+            </div>
+            <div class="person">
+                <div>
+                    <span class="name">Petros Papagiannis</span>
+                    <span class="role">
+                        <a href="mailto:peterpapagiannis@yahoo.com">peterpapagiannis@yahoo.com</a>
+                    </span>
+                    <span class="role" data-el>
+                        Εκπαιδευτής Πληροφορικής · Υποψήφιος Διδάκτωρ (CUT/TEPAK)
+                    </span>
+                    <span class="role" data-en>
+                        CS Instructor · PhD Researcher (CUT/TEPAK)
+                    </span>
+                    <span class="role" style="color:var(--green-dim); font-size:0.72rem;">
+                        <a href="https://petrospapagiannis.com" target="_blank" rel="noopener">petrospapagiannis.com</a>
+                    </span>
+                </div>
+            </div>
+            <br>
+            <div class="person" style="font-size:0.78rem; color: var(--green-dim);">
+                <div>
+                    <span data-el>PHP 8 migration, αρχιτεκτονική backend,<br>παιδαγωγική ενσωμάτωση 2025–</span>
+                    <span data-en>PHP 8 migration, backend architecture,<br>pedagogical integration 2025–</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+    <span>
+        © 2010–2025 OWASP Hackademic Challenges ·
+        <span data-el>Όλα τα δικαιώματα διατηρούνται</span>
+        <span data-en>All rights reserved</span>
+    </span>
+    <span>
+        <a href="https://hackademic.cycollege.dev" target="_blank" rel="noopener">hackademic.cycollege.dev</a>
+    </span>
+    <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">
+        <img class="gpl" src="/assets/images/GPLv3_Logo.svg" height="70" alt="GPLv3">
+    </a>
+</footer>
+
+<script>
+    // Language toggle
+    function setLang(lang) {
+        document.documentElement.setAttribute('data-lang', lang);
+        document.getElementById('btn-el').classList.toggle('active', lang === 'el');
+        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+        localStorage.setItem('hackademic-lang', lang);
+    }
+
+    // Restore saved language
+    const saved = localStorage.getItem('hackademic-lang');
+    if (saved) setLang(saved);
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                observer.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

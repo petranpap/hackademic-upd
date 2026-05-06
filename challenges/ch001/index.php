@@ -4,8 +4,12 @@
  *    OWASP Hackademic Challenges Project
  *    ----------------------------------------------------------------
  *    Copyright (C) 2010-2011
- *   	  Andreas Venieris [venieris@owasp.gr]
- *   	  Anastasios Stasinopoulos [anast@owasp.gr]
+ *        Andreas Venieris [venieris@owasp.gr]
+ *        Anastasios Stasinopoulos [anast@owasp.gr]
+ *    ----------------------------------------------------------------
+ *    PHP 8 Port & Maintenance (2025)
+ *        Petros Papagiannis [peterpapagiannis@yahoo.com]
+ *        Cyprus College, Limassol
  *    ----------------------------------------------------------------
  */
 ?>
